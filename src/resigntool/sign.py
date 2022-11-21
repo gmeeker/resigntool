@@ -15,7 +15,7 @@ def parse_args(args):
                 sign_args.append(a)
                 stamp_args.append(a)
                 args = args[1:]
-            elif a in ('/a', '/as', '/fd', '/nph', '/ph', '/sm', '/uw'):
+            elif a in ('/a', '/as', '/nph', '/ph', '/sm', '/uw'):
                 sign_args.append(a)
                 args = args[1:]
             elif a in ('/ac', '/c', '/csp', '/d', '/du', '/f', '/i', '/kc', '/n', '/p', '/p7', '/p7ce', '/p7co', '/r', '/s', '/sha1', '/u', ):
