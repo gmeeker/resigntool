@@ -1,3 +1,4 @@
+import os
 import subprocess
 import sys
 import time
@@ -53,13 +54,30 @@ def parse_args(args):
         stamp_args = []
     return (sign_args, stamp_args, url)
 
-def sign(args, delay=1, attempts=100, servers=(), config=None, debug=True):
+_signtool_locations = (
+    os.path.join(os.environ['ProgramFiles(x86)'], 'Windows Kits', '10', 'App Certification Kit', 'signtool.exe'),
+    os.path.join(os.environ['ProgramFiles(x86)'], 'Microsoft SDKs', 'ClickOnce', 'SignTool', 'signtool.exe'),
+)
+
+def sign(args, delay=1, attempts=100, servers=(), config=None, debug=False):
     signtool = 'signtool'
     if config:
         signtool = config['DEFAULT'].get('Path', signtool)
         delay = float(config['DEFAULT'].get('Wait', delay))
         attempts = int(config['DEFAULT'].get('Attempts', attempts))
         servers = config.sections()
+    if signtool == 'signtool':
+        # Make sure it exists
+        try:
+            result = subprocess.run(['signtool', '/?'], capture_output=True, check=False)
+            found = (result.returncode == 0)
+        except FileNotFoundError:
+            found = False
+        if not found:
+            for p in _signtool_locations:
+                if os.path.exists(p):
+                    signtool = p
+                    break
     signtool = [signtool]
     # args[0] is command
     if args[0] == 'sign':
