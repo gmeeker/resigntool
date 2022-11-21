@@ -53,12 +53,14 @@ def parse_args(args):
         stamp_args = []
     return (sign_args, stamp_args, url)
 
-def sign(args, delay=1, attempts=100, servers=(), config=None):
+def sign(args, delay=1, attempts=100, servers=(), config=None, debug=True):
+    signtool = 'signtool'
     if config:
+        signtool = config['DEFAULT'].get('Path', signtool)
         delay = float(config['DEFAULT'].get('Wait', delay))
-        attempts = float(config['DEFAULT'].get('Attempts', attempts))
+        attempts = int(config['DEFAULT'].get('Attempts', attempts))
         servers = config.sections()
-    signtool = ['signtool']
+    signtool = [signtool]
     # args[0] is command
     if args[0] == 'sign':
         sign_args, stamp_args, url_index = parse_args(args[1:])
@@ -70,10 +72,14 @@ def sign(args, delay=1, attempts=100, servers=(), config=None):
         stamp_args = []
         url_index = 0
     if sign_args:
+        if debug:
+            print(' '.join(signtool + list(sign_args)))
         result = subprocess.run(signtool + list(sign_args), check=False)
         if result.returncode != 0:
             return result.returncode
     if stamp_args:
+        if debug:
+            print(' '.join(signtool + list(stamp_args)))
         result = subprocess.run(signtool + list(stamp_args), capture_output=True, check=False)
         if result.returncode != 0 and attempts and servers:
             for i in range(attempts):
@@ -86,6 +92,8 @@ def sign(args, delay=1, attempts=100, servers=(), config=None):
                 a = list(stamp_args)
                 a[url_index] = url
                 sys.stdout.write(f'Retrying timestamp with {url}\n')
+                if debug:
+                    print(' '.join(signtool + list(a)))
                 result = subprocess.run(signtool + a, capture_output=True, check=False)
                 if result.returncode == 0:
                     break
