@@ -11,7 +11,7 @@ def parse_args(args):
     while args:
         a = args[0]
         if a and a[0] == '/':
-            if a in ('/q', '/v', '/debug/'):
+            if a in ('/q', '/v', '/debug'):
                 # common args
                 sign_args.append(a)
                 stamp_args.append(a)
@@ -65,6 +65,7 @@ def sign(args, delay=1, attempts=100, servers=(), config=None, debug=False):
         signtool = config['DEFAULT'].get('Path', signtool)
         delay = float(config['DEFAULT'].get('Wait', delay))
         attempts = int(config['DEFAULT'].get('Attempts', attempts))
+        debug = int(config['DEFAULT'].get('Debug', (debug and 1) or 0)) != 0
         servers = config.sections()
     if signtool == 'signtool':
         # Make sure it exists
